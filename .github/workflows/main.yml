@@ -34,21 +34,19 @@ jobs:
         run: |
           mkdir /home/runner/Arduino
           cp -r "/home/runner/work/GNUVario-TTGO-T5/GNUVario-TTGO-T5/Sources/Beta Code/Ide Arduino/libraries/" /home/runner/Arduino
-      - name: test
-        run: |
-            ls /home/runner -h
-            ls /home/runner/Arduino/libraries
-            ls /home/runner/work -h
       - name: patch src
         run: sed -i -e s'|^#define VARIOVERSION|//#define VARIOVERSION|g' "/home/runner/work/GNUVario-TTGO-T5/GNUVario-TTGO-T5/Sources/Beta Code/Ide Arduino/libraries/HardwareConfig/HardwareConfig.h"
       - name: compile
         run: |
           arduino-cli compile -v \
           -b esp32:esp32:esp32:PSRAM=disabled,PartitionScheme=min_spiffs,CPUFreq=240,FlashMode=qio,FlashFreq=80,FlashSize=4M,UploadSpeed=921600,DebugLevel=none \
-          --build-property "build.extra_flags=-DVARIOVERSION=291" \
+          --build-property "build.extra_flags=-DVARIOVERSION=291 -DESP32" \
           --output-dir arduino_build \
           "/home/runner/work/GNUVario-TTGO-T5/GNUVario-TTGO-T5/Sources/Beta Code/Ide Arduino/Gnuvario-E/Gnuvario-E"
-
+      - name: test1
+        run: ls 
+      - name: test2
+        run: pwd
       - name: Upload bin file
         uses: actions/upload-artifact@v2.2.3
         with:
