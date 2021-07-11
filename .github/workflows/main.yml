@@ -19,6 +19,15 @@ jobs:
   build:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        version:
+          - 290
+          - 291
+          - 292
+          - 293
+          - 294
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -36,32 +45,19 @@ jobs:
           cp -r "/home/runner/work/GNUVario-TTGO-T5/GNUVario-TTGO-T5/Sources/Beta Code/Ide Arduino/libraries/" /home/runner/Arduino
       - name: patch src
         run: sed -i -e s'|^#define VARIOVERSION|//#define VARIOVERSION|g' "/home/runner/work/GNUVario-TTGO-T5/GNUVario-TTGO-T5/Sources/Beta Code/Ide Arduino/libraries/HardwareConfig/HardwareConfig.h"
-      - name: compile 291
+      - name: compile ${{ matrix.version }}
         run: |
           arduino-cli compile -v \
           -b esp32:esp32:esp32:PSRAM=disabled,PartitionScheme=min_spiffs,CPUFreq=240,FlashMode=qio,FlashFreq=80,FlashSize=4M,UploadSpeed=921600,DebugLevel=none \
-          --build-property "build.extra_flags=-DVARIOVERSION=291 -DESP32" \
-          --output-dir arduino_build_291 \
+          --build-property "build.extra_flags=-DVARIOVERSION=${{ matrix.version }} -DESP32" \
+          --output-dir arduino_build_${{ matrix.version }} \
           "/home/runner/work/GNUVario-TTGO-T5/GNUVario-TTGO-T5/Sources/Beta Code/Ide Arduino/Gnuvario-E/Gnuvario-E"
-      - name: Upload bin file 291
+      - name: Upload bin file ${{ matrix.version }}
         uses: actions/upload-artifact@v2.2.3
         with:
-            name: Gnuvario-E-291.bin
+            name: Gnuvario-E-${{ matrix.version }}.bin
             # A file, directory or wildcard pattern that describes what to upload
-            path: arduino_build_291/Gnuvario-E.ino.bin
+            path: "arduino_build_${{ matrix.version }}/Gnuvario-E.ino.bin"
             retention-days: 1
             
-      - name: compile 290
-        run: |
-          arduino-cli compile -v \
-          -b esp32:esp32:esp32:PSRAM=disabled,PartitionScheme=min_spiffs,CPUFreq=240,FlashMode=qio,FlashFreq=80,FlashSize=4M,UploadSpeed=921600,DebugLevel=none \
-          --build-property "build.extra_flags=-DVARIOVERSION=290 -DESP32" \
-          --output-dir arduino_build_290 \
-          "/home/runner/work/GNUVario-TTGO-T5/GNUVario-TTGO-T5/Sources/Beta Code/Ide Arduino/Gnuvario-E/Gnuvario-E"
-      - name: Upload bin file 290
-        uses: actions/upload-artifact@v2.2.3
-        with:
-            name: Gnuvario-E-290.bin
-            # A file, directory or wildcard pattern that describes what to upload
-            path: arduino_build_290/Gnuvario-E.ino.bin
-            retention-days: 1            
+
