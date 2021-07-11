@@ -36,21 +36,32 @@ jobs:
           cp -r "/home/runner/work/GNUVario-TTGO-T5/GNUVario-TTGO-T5/Sources/Beta Code/Ide Arduino/libraries/" /home/runner/Arduino
       - name: patch src
         run: sed -i -e s'|^#define VARIOVERSION|//#define VARIOVERSION|g' "/home/runner/work/GNUVario-TTGO-T5/GNUVario-TTGO-T5/Sources/Beta Code/Ide Arduino/libraries/HardwareConfig/HardwareConfig.h"
-      - name: compile
+      - name: compile 291
         run: |
           arduino-cli compile -v \
           -b esp32:esp32:esp32:PSRAM=disabled,PartitionScheme=min_spiffs,CPUFreq=240,FlashMode=qio,FlashFreq=80,FlashSize=4M,UploadSpeed=921600,DebugLevel=none \
           --build-property "build.extra_flags=-DVARIOVERSION=291 -DESP32" \
-          --output-dir arduino_build \
+          --output-dir arduino_build_291 \
           "/home/runner/work/GNUVario-TTGO-T5/GNUVario-TTGO-T5/Sources/Beta Code/Ide Arduino/Gnuvario-E/Gnuvario-E"
-      - name: test1
-        run: ls 
-      - name: test2
-        run: pwd
-      - name: Upload bin file
+      - name: Upload bin file 291
         uses: actions/upload-artifact@v2.2.3
         with:
             name: Gnuvario-E-291.bin
             # A file, directory or wildcard pattern that describes what to upload
-            path: arduino_build/Gnuvario-E.ino.bin
+            path: arduino_build_291/Gnuvario-E.ino.bin
             retention-days: 1
+            
+      - name: compile 290
+        run: |
+          arduino-cli compile -v \
+          -b esp32:esp32:esp32:PSRAM=disabled,PartitionScheme=min_spiffs,CPUFreq=240,FlashMode=qio,FlashFreq=80,FlashSize=4M,UploadSpeed=921600,DebugLevel=none \
+          --build-property "build.extra_flags=-DVARIOVERSION=290 -DESP32" \
+          --output-dir arduino_build_290 \
+          "/home/runner/work/GNUVario-TTGO-T5/GNUVario-TTGO-T5/Sources/Beta Code/Ide Arduino/Gnuvario-E/Gnuvario-E"
+      - name: Upload bin file 290
+        uses: actions/upload-artifact@v2.2.3
+        with:
+            name: Gnuvario-E-290.bin
+            # A file, directory or wildcard pattern that describes what to upload
+            path: arduino_build_290/Gnuvario-E.ino.bin
+            retention-days: 1            
