@@ -45,14 +45,16 @@ jobs:
           mkdir Arduino
           cp -r "Sources/Beta Code/Ide Arduino/libraries/" Arduino/
       - name: patch src
-        run: sed -i -e s'|^#define VARIOVERSION|//#define VARIOVERSION|g' "Sources/Beta Code/Ide Arduino/libraries/HardwareConfig/HardwareConfig.h"
+        run: sed -i -e s'|^#define VARIOVERSION|//#define VARIOVERSION|g' "/home/runner/GNUVario-TTGO-T5/GNUVario-TTGO-T5/Sources/Beta Code/Ide Arduino/libraries/HardwareConfig/HardwareConfig.h"
+      - name: test
+        run: ls "/home/runner/GNUVario-TTGO-T5/GNUVario-TTGO-T5/Sources/Beta Code/Ide Arduino/"
       - name: compile
         run: |
           arduino-cli compile -v \
           -b esp32:esp32:esp32:PSRAM=disabled,PartitionScheme=min_spiffs,CPUFreq=240,FlashMode=qio,FlashFreq=80,FlashSize=4M,UploadSpeed=921600,DebugLevel=none \
           --build-property "build.extra_flags=-DVARIOVERSION=291" \
           --output-dir arduino_build \
-          "Sources/Beta Code/Ide Arduino/Gnuvario-E/Gnuvario-E"
+          "/home/runner/GNUVario-TTGO-T5/GNUVario-TTGO-T5/Sources/Beta Code/Ide Arduino/Gnuvario-E/Gnuvario-E"
 
       - name: Upload bin file
         uses: actions/upload-artifact@v2.2.3
