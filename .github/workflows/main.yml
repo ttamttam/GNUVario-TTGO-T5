@@ -43,10 +43,7 @@ jobs:
       - name: install libs
         run: |
           mkdir Arduino
-          cp -r "Sources/Beta Code/Ide Arduino/libraries/" Arduino/
-      - name: test
-        run: ls "/home/runner/work"
-
+          cp -r "/home/runner/work/GNUVario-TTGO-T5/GNUVario-TTGO-T5/Sources/Beta Code/Ide Arduino/libraries/" Arduino/
       - name: patch src
         run: sed -i -e s'|^#define VARIOVERSION|//#define VARIOVERSION|g' "/home/runner/work/GNUVario-TTGO-T5/GNUVario-TTGO-T5/Sources/Beta Code/Ide Arduino/libraries/HardwareConfig/HardwareConfig.h"
       - name: compile
