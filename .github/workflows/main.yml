@@ -24,16 +24,6 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
-
-      # Runs a single command using the runners shell
-      - name: Run a one-line script
-        run: echo Hello, world!
-
-      # Runs a set of commands using the runners shell
-      - name: Run a multi-line script
-        run: |
-          echo Add other actions to build,
-          echo test, and deploy your project.
       - name: Install Arduino CLI
         uses: arduino/setup-arduino-cli@v1
       - name: Update index
@@ -42,8 +32,13 @@ jobs:
         run: arduino-cli core install esp32:esp32 --additional-urls https://dl.espressif.com/dl/package_esp32_index.json
       - name: install libs
         run: |
-          mkdir Arduino
-          cp -r "/home/runner/work/GNUVario-TTGO-T5/GNUVario-TTGO-T5/Sources/Beta Code/Ide Arduino/libraries/" Arduino/
+          mkdir /home/runner/Arduino
+          cp -r "/home/runner/work/GNUVario-TTGO-T5/GNUVario-TTGO-T5/Sources/Beta Code/Ide Arduino/libraries/" /home/runner/Arduino
+      - name: test
+        run: |
+            ls /home/runner -h
+            ls /home/runner/Arduino/libraries
+            ls /home/runner/work -h
       - name: patch src
         run: sed -i -e s'|^#define VARIOVERSION|//#define VARIOVERSION|g' "/home/runner/work/GNUVario-TTGO-T5/GNUVario-TTGO-T5/Sources/Beta Code/Ide Arduino/libraries/HardwareConfig/HardwareConfig.h"
       - name: compile
