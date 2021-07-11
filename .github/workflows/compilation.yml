@@ -41,16 +41,16 @@ jobs:
       - name: install libs
         run: |
           mkdir /home/runner/Arduino
-          cp -r "${{ env.GITHUB_WORKSPACE }}/Sources/Beta Code/Ide Arduino/libraries/" /home/runner/Arduino
+          cp -r "${GITHUB_WORKSPACE}/Sources/Beta Code/Ide Arduino/libraries/" /home/runner/Arduino
       - name: patch src
-        run: sed -i -e s'|^#define VARIOVERSION|//#define VARIOVERSION|g' "{{ env.GITHUB_WORKSPACE }}/Sources/Beta Code/Ide Arduino/libraries/HardwareConfig/HardwareConfig.h"
+        run: sed -i -e s'|^#define VARIOVERSION|//#define VARIOVERSION|g' "${GITHUB_WORKSPACE}/Sources/Beta Code/Ide Arduino/libraries/HardwareConfig/HardwareConfig.h"
       - name: compile ${{ matrix.version }}
         run: |
           arduino-cli compile -v \
           -b esp32:esp32:esp32:PSRAM=disabled,PartitionScheme=min_spiffs,CPUFreq=240,FlashMode=qio,FlashFreq=80,FlashSize=4M,UploadSpeed=921600,DebugLevel=none \
           --build-property "build.extra_flags=-DVARIOVERSION=${{ matrix.version }} -DESP32" \
           --output-dir arduino_build_${{ matrix.version }} \
-          "{{ env.GITHUB_WORKSPACE }}/Sources/Beta Code/Ide Arduino/Gnuvario-E/Gnuvario-E"
+          "${GITHUB_WORKSPACE}/Sources/Beta Code/Ide Arduino/Gnuvario-E/Gnuvario-E"
       - name: Upload bin file ${{ matrix.version }}
         uses: actions/upload-artifact@v2.2.3
         with:
