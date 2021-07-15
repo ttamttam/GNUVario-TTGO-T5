@@ -69,5 +69,5 @@ jobs:
         uses: actions/upload-artifact@v2.2.3
         with:
             name: Gnuvario-E-${{ matrix.version }}.partitions.bin
-            path: "arduino_build_${{ matrix.version }}/Gnuvario-E.ino.partition.sbin"
+            path: "arduino_build_${{ matrix.version }}/Gnuvario-E.ino.partitions.bin"
             retention-days: 1
