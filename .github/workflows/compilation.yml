@@ -43,10 +43,11 @@ jobs:
       - name: Install core
         run: arduino-cli core install esp32:esp32 --additional-urls https://dl.espressif.com/dl/package_esp32_index.json
       # Partie à revoir. Pour le moment, je recopie les librairies depuis le dépôt vers le répertoire Arduino
-      - name: install libs
-        run: |
-          mkdir /home/runner/Arduino
-          cp -r "${GITHUB_WORKSPACE}/Sources/Beta Code/Ide Arduino/libraries/" /home/runner/Arduino
+      #   Finalement : supprimée (à la place, je dis où sont les librairies au moment de la compilation)
+      #- name: install libs
+      #  run: |
+      #    mkdir /home/runner/Arduino
+      #    cp -r "${GITHUB_WORKSPACE}/Sources/Beta Code/Ide Arduino/libraries/" /home/runner/Arduino
       # Supprimé. À la place, j’ai mis un #ifndef dans le .h. Comme ça, rien ne change pour les autres usages, mais on peut forcer la valeur ici avec -D
       # - name: patch src
       #  run: sed -i -e s'|^#define VARIOVERSION|//#define VARIOVERSION|g' "${GITHUB_WORKSPACE}/Sources/Beta Code/Ide Arduino/libraries/HardwareConfig/HardwareConfig.h"
@@ -57,6 +58,7 @@ jobs:
           -b esp32:esp32:esp32:PSRAM=disabled,PartitionScheme=min_spiffs,CPUFreq=240,FlashMode=qio,FlashFreq=80,FlashSize=4M,UploadSpeed=921600,DebugLevel=none \
           --build-property "build.extra_flags=-DVARIOVERSION=${{ matrix.version }} -DESP32" \
           --output-dir arduino_build_${{ matrix.version }} \
+          --libraries "${GITHUB_WORKSPACE}/Sources/Beta Code/Ide Arduino/libraries" \
           "${GITHUB_WORKSPACE}/Sources/Beta Code/Ide Arduino/Gnuvario-E/Gnuvario-E"
       # Récup des fichiers compilés
       - name: Upload bin file ${{ matrix.version }}
