@@ -81,15 +81,18 @@ jobs:
           echo "NOW=v$(date +'%Y%m%d.%H%M%S')" >> $GITHUB_ENV
       - name: download artifacts
         uses: actions/download-artifact@v2
-      - name: Display structure of downloaded files
-        run: ls -R
-      # - name: make release
-      #   uses: ncipollo/release-action@v1
-      #   with:
-      #     artifacts: >
-      #       Gnuvario-E-290.bin/Gnuvario-E-290.bin,
-      #       Gnuvario-E-290.partitions.bin/Gnuvario-E-290.partitions.bin,
-      #       Gnuvario-E-354.bin/Gnuvario-E-354.bin,
-      #       Gnuvario-E-354.partitions.bin/Gnuvario-E-354.partitions.bin
-      #     tag: ${{ env.NOW }}
-      #     token: ${{ secrets.GITHUB_TOKEN }}
+      # - name: Display structure of downloaded files
+      #   run: ls -R
+      - name: move files
+        run: |
+          mkdir release
+          mv Gnuvario-E-290.bin/Gnuvario-E.ino.bin  release/Gnuvario-E-290.bin
+          mv Gnuvario-E-290.partitions.bin/Gnuvario-E.ino.partitions.bin  release/Gnuvario-E-290.partitions.bin
+          mv Gnuvario-E-354.bin/Gnuvario-E.ino.bin  release/Gnuvario-E-354.bin
+          mv Gnuvario-E-354.partitions.bin/Gnuvario-E.ino.partitions.bin  release/Gnuvario-E-354.partitions.bin
+      - name: make release
+        uses: ncipollo/release-action@v1
+        with:
+          artifacts: "release/*"
+          tag: ${{ env.NOW }}
+          token: ${{ secrets.GITHUB_TOKEN }}
