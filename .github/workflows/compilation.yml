@@ -77,7 +77,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: set env
-        run: echo "::set-env name=NOW::v$(date +'%Y%m%d.%H%M%S')"
+        run: |
+          echo "NOW=v$(date +'%Y%m%d.%H%M%S')" >> $GITHUB_ENV
       - name: download artifacts
         uses: actions/download-artifact@v2
       - name: make release
