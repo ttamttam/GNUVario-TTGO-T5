@@ -71,3 +71,18 @@ jobs:
             name: Gnuvario-E-${{ matrix.version }}.partitions.bin
             path: "arduino_build_${{ matrix.version }}/Gnuvario-E.ino.partitions.bin"
             retention-days: 1
+
+  release:
+    runs-on: ubuntu-latest
+    - uses: actions/checkout@v2
+    - uses: actions/download-artifact@v2
+      with:
+        name: Gnuvario-E-*.bin
+    - name: Display structure of downloaded files
+      run: ls -R
+
+      # - uses: ncipollo/release-action@v1
+      # with:
+      #   artifacts: "release.tar.gz,foo/*.txt"
+      #   bodyFile: "body.md"
+      #   token: ${{ secrets.GITHUB_TOKEN }}
