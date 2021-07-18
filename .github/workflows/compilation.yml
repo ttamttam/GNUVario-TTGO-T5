@@ -85,9 +85,9 @@ jobs:
         uses: ncipollo/release-action@v1
         with:
           artifacts: >
-            Gnuvario-E-290.bin,
-            Gnuvario-E-290.partitions.bin,
-            Gnuvario-E-354.bin,
-            Gnuvario-E-354.partitions.bin
+            Gnuvario-E-290.bin/Gnuvario-E-290.bin,
+            Gnuvario-E-290.partitions.bin/Gnuvario-E-290.partitions.bin,
+            Gnuvario-E-354.bin/Gnuvario-E-354.bin,
+            Gnuvario-E-354.partitions.bin/Gnuvario-E-354.partitions.bin
           tag: ${{ env.NOW }}
           token: ${{ secrets.GITHUB_TOKEN }}
