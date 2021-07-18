@@ -76,13 +76,8 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
-      - name: Display structure of downloaded files
-        run: ls -R
-
-      # - uses: ncipollo/release-action@v1
-      # with:
-      #   artifacts: "release.tar.gz,foo/*.txt"
-      #   bodyFile: "body.md"
-      #   token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: ncipollo/release-action@v1
+        with:
+          artifacts: "Gnuvario-E-*.bin,Gnuvario-E-*.partitions.bin"
+          token: ${{ secrets.GITHUB_TOKEN }}
