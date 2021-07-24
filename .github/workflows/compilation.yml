@@ -1,15 +1,16 @@
-name: Compilation
+name: Compilation des firmware
 
 # Controls when the workflow will run
 on:
-  # Triggers the workflow on push or pull request events but only for the master branch
-  # push:
-  #  branches: [ master ]
-  # pull_request:
-  #  branches: [ master ]
+  push:
+    tags: v*
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
+    inputs:
+      release_version:
+        description: Version de la publication
+        required: true
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -32,6 +33,36 @@ jobs:
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
 
+      - name: Dump GitHub context
+        env:
+          GITHUB_CONTEXT: ${{ toJSON(github) }}
+        run: echo "$GITHUB_CONTEXT"
+
+      - name: Dump job context
+        env:
+          JOB_CONTEXT: ${{ toJSON(job) }}
+        run: echo "$JOB_CONTEXT"
+
+      - name: Dump steps context
+        env:
+          STEPS_CONTEXT: ${{ toJSON(steps) }}
+        run: echo "$STEPS_CONTEXT"
+
+      - name: Dump runner context
+        env:
+          RUNNER_CONTEXT: ${{ toJSON(runner) }}
+        run: echo "$RUNNER_CONTEXT"
+
+      - name: Dump strategy context
+        env:
+          STRATEGY_CONTEXT: ${{ toJSON(strategy) }}
+        run: echo "$STRATEGY_CONTEXT"
+
+      - name: Dump matrix context
+        env:
+          MATRIX_CONTEXT: ${{ toJSON(matrix) }}
+        run: echo "$MATRIX_CONTEXT"
+
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
 
@@ -39,12 +70,22 @@ jobs:
       - name: Install Arduino CLI
         uses: arduino/setup-arduino-cli@v1
 
+      # Mise en cache de .arduino15
+      - name: Cache arduin15
+      id: cache-dot-arduino15
+      uses: actions/cache@v2
+      with:
+        path: .arduino15
+        key: ${{ runner.os }}-dot-arduin15
+
       # Récup index outils expressifs
       - name: Update index
+        if: steps.cache-dot-arduino15.outputs.cache-hit != 'true'
         run: arduino-cli core update-index --additional-urls https://dl.espressif.com/dl/package_esp32_index.json
 
       # Install outils expressifs
       - name: Install core
+        if: steps.cache-dot-arduino15.outputs.cache-hit != 'true'
         run: arduino-cli core install esp32:esp32 --additional-urls https://dl.espressif.com/dl/package_esp32_index.json
 
       # Compilation, en utilisant -D pour paramétrer les versions.
@@ -62,14 +103,14 @@ jobs:
         uses: actions/upload-artifact@v2.2.3
         with:
             name: Gnuvario-E-${{ matrix.version }}.bin
-            path: "arduino_build_${{ matrix.version }}/Gnuvario-E.ino.bin"
+            path: "arduino_build/Gnuvario-E-${{ matrix.version }}.bin"
             retention-days: 1
 
       - name: Upload partition file ${{ matrix.version }}
         uses: actions/upload-artifact@v2.2.3
         with:
             name: Gnuvario-E-${{ matrix.version }}.partitions.bin
-            path: "arduino_build_${{ matrix.version }}/Gnuvario-E.ino.partitions.bin"
+            path: "arduino_build/Gnuvario-E-${{ matrix.version }}.partitions.bin"
             retention-days: 1
 
   # Job de release, qui dépend du job "build"
@@ -77,29 +118,42 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
-      # Comme le job est créé à la demande et qu’il nous faut un tag, on commence par mettre la date et l’heure dans NOW
-      - name: set env
-        run: |
-          echo "NOW=v$(date +'%Y%m%d.%H%M%S')" >> $GITHUB_ENV
-
       # Récupération des fichiers compilés durant le premier job
       - name: download artifacts
         uses: actions/download-artifact@v2
 
+      - name: listing
+        run: ls -lR
+
       # Déplacement des fichiers dans un répertoire 'release'
-      - name: move files
-        run: |
-          mkdir release
-          mv Gnuvario-E-290.bin/Gnuvario-E.ino.bin  release/Gnuvario-E-290.bin
-          mv Gnuvario-E-290.partitions.bin/Gnuvario-E.ino.partitions.bin  release/Gnuvario-E-290.partitions.bin
-          mv Gnuvario-E-354.bin/Gnuvario-E.ino.bin  release/Gnuvario-E-354.bin
-          mv Gnuvario-E-354.partitions.bin/Gnuvario-E.ino.partitions.bin  release/Gnuvario-E-354.partitions.bin
+      # - name: move files
+      #   run: |
+      #     mkdir release
+      #     mv Gnuvario-E-290.bin/Gnuvario-E.ino.bin  release/Gnuvario-E-290.bin
+      #     mv Gnuvario-E-290.partitions.bin/Gnuvario-E.ino.partitions.bin  release/Gnuvario-E-290.partitions.bin
+      #     mv Gnuvario-E-354.bin/Gnuvario-E.ino.bin  release/Gnuvario-E-354.bin
+      #     mv Gnuvario-E-354.partitions.bin/Gnuvario-E.ino.partitions.bin  release/Gnuvario-E-354.partitions.bin
+
+      # Comme le job est créé à la demande et qu’il nous faut un tag, on commence par mettre la date et l’heure dans NOW
+      # - name: set env
+      #   run: |
+      #     echo "NOW=v$(date +'%Y%m%d.%H%M%S')" >> $GITHUB_ENV
+
 
       # Publication
-      - name: make release
-        uses: ncipollo/release-action@v1
-        with:
-          artifacts: "release/*"
-          tag: ${{ env.NOW }}
-          token: ${{ secrets.GITHUB_TOKEN }}
-          body: "Un joli texte…"
+      # - name: make release
+      #   uses: ncipollo/release-action@v1
+      #   with:
+      #     artifacts: "release/*"
+      #     tag: ${{ env.NOW }}
+      #     token: ${{ secrets.GITHUB_TOKEN }}
+      #     body: "Un joli texte…"
+
+      # - name: make release
+      #   uses: ncipollo/release-action@v1
+      #   with:
+      #     artifacts: "release/*"
+      #     tag: ${{ env.NOW }}
+      #     token: ${{ secrets.GITHUB_TOKEN }}
+      #     body: "Un joli texte…"
+
