@@ -38,9 +38,11 @@ jobs:
       #   run: echo "Trouvé : ${{ github.event.inputs.release_version }}"
 
       - name: Dump GitHub context
+        if: startsWith( github.ref, 'refs/tags/v')
         run: echo "${{ github.ref }}"
 
       - name: Dump release version manuel
+        if: ! startsWith( github.ref, 'refs/tags/v')
         run: echo "${{ github.event.inputs.release_version }}"
 
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
