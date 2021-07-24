@@ -2,10 +2,11 @@ name: Compilation des firmware
 
 # Controls when the workflow will run
 on:
+  # Soit lorsqu’un tag est poussé dans le dépôt
   push:
     tags: v*
 
-  # Allows you to run this workflow manually from the Actions tab
+  # Soit lancement manuel (ça demande "release_version")
   workflow_dispatch:
     inputs:
       release_version:
@@ -15,6 +16,7 @@ on:
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
 
+  # Job pour mettre en cache le dossier .arduino15 qui contient les outils expressifs
   cache_arduino:
     runs-on: ubuntu-latest
     steps:
@@ -41,7 +43,6 @@ jobs:
         run: arduino-cli core install esp32:esp32 --additional-urls https://dl.espressif.com/dl/package_esp32_index.json
 
   build:
-    # The type of runner that the job will run on
     runs-on: ubuntu-latest
     needs: cache_arduino
 
@@ -56,24 +57,7 @@ jobs:
           - 294
           - 354
 
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-
-      # - name: Essai
-      #   if: github.event.inputs.release_version != ""
-      #   run: echo "Trouvé : ${{ github.event.inputs.release_version }}"
-
-      - name: Dump GitHub context
-        if: startsWith( github.ref, 'refs/tags/v')
-        run: echo "${{ github.ref }}"
-
-      - name: Dump GitHub context
-        if: startsWith( github.ref, 'refs/tags/v')
-        run: echo "${{ github.ref }}"
-     
-      - name: Dump release version manuel
-        if: (! startsWith( github.ref, 'refs/tags/v'))
-        run: echo "${{ github.event.inputs.release_version }}"
 
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
@@ -82,7 +66,7 @@ jobs:
       - name: Install Arduino CLI
         uses: arduino/setup-arduino-cli@v1
 
-      # Mise en cache de .arduino15
+      # Mise en cache/Récupération de .arduino15
       - name: Cache .arduino15
         id: cache-dot-arduino15
         uses: actions/cache@v2
@@ -90,15 +74,15 @@ jobs:
           path: "~/.arduino15"
           key: ${{ runner.os }}-dot-arduino15
 
-      # Récup index outils expressifs
-      - name: Update index
-        if: steps.cache-dot-arduino15.outputs.cache-hit != 'true'
-        run: arduino-cli core update-index --additional-urls https://dl.espressif.com/dl/package_esp32_index.json
+      # # Récup index outils expressifs
+      # - name: Update index
+      #   if: steps.cache-dot-arduino15.outputs.cache-hit != 'true'
+      #   run: arduino-cli core update-index --additional-urls https://dl.espressif.com/dl/package_esp32_index.json
 
-      # Install outils expressifs
-      - name: Install core
-        if: steps.cache-dot-arduino15.outputs.cache-hit != 'true'
-        run: arduino-cli core install esp32:esp32 --additional-urls https://dl.espressif.com/dl/package_esp32_index.json
+      # # Install outils expressifs
+      # - name: Install core
+      #   if: steps.cache-dot-arduino15.outputs.cache-hit != 'true'
+      #   run: arduino-cli core install esp32:esp32 --additional-urls https://dl.espressif.com/dl/package_esp32_index.json
 
       # Compilation, en utilisant -D pour paramétrer les versions.
       - name: compile ${{ matrix.version }}
@@ -151,14 +135,13 @@ jobs:
       #     echo "NOW=v$(date +'%Y%m%d.%H%M%S')" >> $GITHUB_ENV
 
       # Essai pour mettre dans RVER soit le tags soit 
-      - name: retrieve release
-        run: |
-          if [ {{ startsWith( github.ref, 'refs/tags/v') }} ]
-          then
-          echo "RVER=v$(${GITHUB_REF#refs/tags/})" >> $GITHUB_ENV
-          else
-          echo "RVER={{ github.event.inputs.release_version }}" >> $GITHUB_ENV
-          fi
+      - name: retrieve release (si tag)
+        if: startsWith( github.ref, 'refs/tags/v')
+        run: echo "RVER=v$(${GITHUB_REF#refs/tags/})" >> $GITHUB_ENV
+
+      - name: retrieve release (si manuel)
+        if: (! startsWith( github.ref, 'refs/tags/v'))
+        run: echo "RVER={{ github.event.inputs.release_version }}" >> $GITHUB_ENV
 
       # Publication
       - name: make release
