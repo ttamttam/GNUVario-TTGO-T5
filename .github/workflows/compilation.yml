@@ -15,19 +15,45 @@ on:
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
 
+  cache_arduino:
+    runs-on: ubuntu-latest
+    steps:
+      # Installation de l’outil arduino-cli
+      - name: Install Arduino CLI
+        uses: arduino/setup-arduino-cli@v1
+
+      # Mise en cache de .arduino15
+      - name: Cache .arduino15
+        id: cache-dot-arduino15
+        uses: actions/cache@v2
+        with:
+          path: "$HOME/.arduino15"
+          key: ${{ runner.os }}-dot-arduino15
+
+      # Récup index outils expressifs
+      - name: Update index
+        if: steps.cache-dot-arduino15.outputs.cache-hit != 'true'
+        run: arduino-cli core update-index --additional-urls https://dl.espressif.com/dl/package_esp32_index.json
+
+      # Install outils expressifs
+      - name: Install core
+        if: steps.cache-dot-arduino15.outputs.cache-hit != 'true'
+        run: arduino-cli core install esp32:esp32 --additional-urls https://dl.espressif.com/dl/package_esp32_index.json
+
   build:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
+    needs: cache_arduino
 
     # On va construire différentes versions en parallèle
     strategy:
       matrix:
         version:
           - 290
-          # - 291
-          # - 292
-          # - 293
-          # - 294
+          - 291
+          - 292
+          - 293
+          - 294
           - 354
 
     # Steps represent a sequence of tasks that will be executed as part of the job
@@ -41,6 +67,10 @@ jobs:
         if: startsWith( github.ref, 'refs/tags/v')
         run: echo "${{ github.ref }}"
 
+      - name: Dump GitHub context
+        if: startsWith( github.ref, 'refs/tags/v')
+        run: echo "${{ github.ref }}"
+     
       - name: Dump release version manuel
         if: (! startsWith( github.ref, 'refs/tags/v'))
         run: echo "${{ github.event.inputs.release_version }}"
@@ -52,57 +82,55 @@ jobs:
       - name: Install Arduino CLI
         uses: arduino/setup-arduino-cli@v1
 
-      # # Mise en cache de .arduino15
-      # - name: Cache dot arduino 15
-      #   id: cache-dot-arduino15
-      #   uses: actions/cache@v2
-      #   with:
-      #     path: '.arduino15'
-      #     key: ${{ runner.os }}-dot-arduino15
+      # Mise en cache de .arduino15
+      - name: Cache .arduino15
+        id: cache-dot-arduino15
+        uses: actions/cache@v2
+        with:
+          path: "$HOME/.arduino15"
+          key: ${{ runner.os }}-dot-arduino15
 
       # Récup index outils expressifs
       - name: Update index
-        # if: steps.cache-dot-arduino15.outputs.cache-hit != 'true'
+        if: steps.cache-dot-arduino15.outputs.cache-hit != 'true'
         run: arduino-cli core update-index --additional-urls https://dl.espressif.com/dl/package_esp32_index.json
 
       # Install outils expressifs
       - name: Install core
-        # if: steps.cache-dot-arduino15.outputs.cache-hit != 'true'
+        if: steps.cache-dot-arduino15.outputs.cache-hit != 'true'
         run: arduino-cli core install esp32:esp32 --additional-urls https://dl.espressif.com/dl/package_esp32_index.json
 
       # Compilation, en utilisant -D pour paramétrer les versions.
-      # - name: compile ${{ matrix.version }}
-      #   run: |
-      #     arduino-cli compile -v \
-      #     -b esp32:esp32:esp32:PSRAM=disabled,PartitionScheme=min_spiffs,CPUFreq=240,FlashMode=qio,FlashFreq=80,FlashSize=4M,UploadSpeed=921600,DebugLevel=none \
-      #     --build-property "build.extra_flags=-DVARIOVERSION=${{ matrix.version }} -DESP32" \
-      #     --output-dir arduino_build_${{ matrix.version }} \
-      #     --libraries "${GITHUB_WORKSPACE}/Sources/Beta Code/Ide Arduino/libraries" \
-      #     "${GITHUB_WORKSPACE}/Sources/Beta Code/Ide Arduino/Gnuvario-E/Gnuvario-E"
+      - name: compile ${{ matrix.version }}
+        run: |
+          arduino-cli compile -v \
+          -b esp32:esp32:esp32:PSRAM=disabled,PartitionScheme=min_spiffs,CPUFreq=240,FlashMode=qio,FlashFreq=80,FlashSize=4M,UploadSpeed=921600,DebugLevel=none \
+          --build-property "build.extra_flags=-DVARIOVERSION=${{ matrix.version }} -DESP32" \
+          --output-dir arduino_build_${{ matrix.version }} \
+          --libraries "${GITHUB_WORKSPACE}/Sources/Beta Code/Ide Arduino/libraries" \
+          "${GITHUB_WORKSPACE}/Sources/Beta Code/Ide Arduino/Gnuvario-E/Gnuvario-E"
 
-      # # Récup des fichiers compilés
-      # - name: Upload bin file ${{ matrix.version }}
-      #   uses: actions/upload-artifact@v2.2.3
-      #   with:
-      #       name: Gnuvario-E-${{ matrix.version }}.bin
-      #       path: "arduino_build_${{ matrix.version }}/Gnuvario-E.ino.bin"
-      #       retention-days: 1
+      # Récup des fichiers compilés
+      - name: Upload bin file ${{ matrix.version }}
+        uses: actions/upload-artifact@v2.2.3
+        with:
+            name: Gnuvario-E-${{ matrix.version }}.bin
+            path: "arduino_build_${{ matrix.version }}/Gnuvario-E.ino.bin"
+            retention-days: 1
 
-      # - name: Upload partition file ${{ matrix.version }}
-      #   uses: actions/upload-artifact@v2.2.3
-      #   with:
-      #       name: Gnuvario-E-${{ matrix.version }}.partitions.bin
-      #       path: "arduino_build_${{ matrix.version }}/Gnuvario-E.ino.partitions.bin"
-      #       retention-days: 1
-
-      - name: Debug pour dot arduino
-        run: ls -alR $HOME
+      - name: Upload partition file ${{ matrix.version }}
+        uses: actions/upload-artifact@v2.2.3
+        with:
+            name: Gnuvario-E-${{ matrix.version }}.partitions.bin
+            path: "arduino_build_${{ matrix.version }}/Gnuvario-E.ino.partitions.bin"
+            retention-days: 1
 
   # Job de release, qui dépend du job "build"
   release:
     needs: build
     runs-on: ubuntu-latest
     steps:
+
       # Récupération des fichiers compilés durant le premier job
       - name: download artifacts
         uses: actions/download-artifact@v2
@@ -111,31 +139,34 @@ jobs:
       - name: move files
         run: |
           mkdir release
-          mv Gnuvario-E-290.bin/Gnuvario-E.ino.bin  release/Gnuvario-E-290.bin
-          mv Gnuvario-E-290.partitions.bin/Gnuvario-E.ino.partitions.bin  release/Gnuvario-E-290.partitions.bin
-          mv Gnuvario-E-354.bin/Gnuvario-E.ino.bin  release/Gnuvario-E-354.bin
-          mv Gnuvario-E-354.partitions.bin/Gnuvario-E.ino.partitions.bin  release/Gnuvario-E-354.partitions.bin
+          for ver in 290 291 292 293 294 354
+          do
+          mv Gnuvario-E-${ver}.bin/Gnuvario-E.ino.bin  release/Gnuvario-E-${ver}.bin
+          mv Gnuvario-E-${ver}.partitions.bin/Gnuvario-E.ino.partitions.bin  release/Gnuvario-E-${ver}.partitions.bin
+          done
 
       # Comme le job est créé à la demande et qu’il nous faut un tag, on commence par mettre la date et l’heure dans NOW
       # - name: set env
       #   run: |
       #     echo "NOW=v$(date +'%Y%m%d.%H%M%S')" >> $GITHUB_ENV
 
+      # Essai pour mettre dans RVER soit le tags soit 
+      - name: retrieve release
+        run: |
+          if [ {{ startsWith( github.ref, 'refs/tags/v') }} ]
+          then
+          echo "RVER=v$(${GITHUB_REF#refs/tags/})" >> $GITHUB_ENV
+          else
+          echo "RVER={{ github.event.inputs.release_version }}" >> $GITHUB_ENV
+          fi
 
       # Publication
-      # - name: make release
-      #   uses: ncipollo/release-action@v1
-      #   with:
-      #     artifacts: "release/*"
-      #     tag: ${{ env.NOW }}
-      #     token: ${{ secrets.GITHUB_TOKEN }}
-      #     body: "Un joli texte…"
+      - name: make release
+        uses: ncipollo/release-action@v1
+        with:
+          artifacts: "release/*"
+          tag: ${{ env.RVER }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          body: "Un joli texte pour décrire la release"
 
-      # - name: make release
-      #   uses: ncipollo/release-action@v1
-      #   with:
-      #     artifacts: "release/*"
-      #     tag: ${{ env.NOW }}
-      #     token: ${{ secrets.GITHUB_TOKEN }}
-      #     body: "Un joli texte…"
 
