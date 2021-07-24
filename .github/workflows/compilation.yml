@@ -27,7 +27,7 @@ jobs:
         id: cache-dot-arduino15
         uses: actions/cache@v2
         with:
-          path: "$HOME/.arduino15"
+          path: "~/.arduino15"
           key: ${{ runner.os }}-dot-arduino15
 
       # Récup index outils expressifs
@@ -87,7 +87,7 @@ jobs:
         id: cache-dot-arduino15
         uses: actions/cache@v2
         with:
-          path: "$HOME/.arduino15"
+          path: "~/.arduino15"
           key: ${{ runner.os }}-dot-arduino15
 
       # Récup index outils expressifs
