@@ -120,7 +120,7 @@ jobs:
         uses: actions/download-artifact@v2
 
       # Déplacement des fichiers dans un répertoire 'release'
-      # TODO: construire la liste automatiquement
+      # TODO: construire la liste automatiquement à l’étape précédente et récupérer ici
       - name: move files
         run: |
           mkdir release
@@ -138,7 +138,7 @@ jobs:
       # Essai pour mettre le tag dans RVER
       - name: retrieve release (si tag)
         if: startsWith( github.ref, 'refs/tags/v')
-        run: echo "RVER=v${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+        run: echo "RVER=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
 
       # Ou bien de récupérer la version entrée manuellement
       - name: retrieve release (si manuel)
