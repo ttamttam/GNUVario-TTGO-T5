@@ -38,12 +38,10 @@ jobs:
       #   run: echo "Trouvé : ${{ github.event.inputs.release_version }}"
 
       - name: Dump GitHub context
-        env:
-          GITHUB_CONTEXT: ${{ toJSON(github) }}
-        run: echo "$GITHUB_CONTEXT"
+        run: echo "${{ github.ref }}"
 
-      - name: Dump GitHub context (essai 2)
-        run: echo "${{ toJSON(github) }}"
+      - name: Dump release version manuel
+        run: echo "${{ github.event.inputs.release_version }}"
 
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
@@ -95,6 +93,9 @@ jobs:
             path: "arduino_build_${{ matrix.version }}/Gnuvario-E.ino.partitions.bin"
             retention-days: 1
 
+      - name: Debug pour dot arduino
+        run: ls -lR
+
   # Job de release, qui dépend du job "build"
   release:
     needs: build
@@ -104,17 +105,14 @@ jobs:
       - name: download artifacts
         uses: actions/download-artifact@v2
 
-      - name: listing
-        run: ls -lR
-
-      # Déplacement des fichiers dans un répertoire 'release'
-      # - name: move files
-      #   run: |
-      #     mkdir release
-      #     mv Gnuvario-E-290.bin/Gnuvario-E.ino.bin  release/Gnuvario-E-290.bin
-      #     mv Gnuvario-E-290.partitions.bin/Gnuvario-E.ino.partitions.bin  release/Gnuvario-E-290.partitions.bin
-      #     mv Gnuvario-E-354.bin/Gnuvario-E.ino.bin  release/Gnuvario-E-354.bin
-      #     mv Gnuvario-E-354.partitions.bin/Gnuvario-E.ino.partitions.bin  release/Gnuvario-E-354.partitions.bin
+      Déplacement des fichiers dans un répertoire 'release'
+      - name: move files
+        run: |
+          mkdir release
+          mv Gnuvario-E-290.bin/Gnuvario-E.ino.bin  release/Gnuvario-E-290.bin
+          mv Gnuvario-E-290.partitions.bin/Gnuvario-E.ino.partitions.bin  release/Gnuvario-E-290.partitions.bin
+          mv Gnuvario-E-354.bin/Gnuvario-E.ino.bin  release/Gnuvario-E-354.bin
+          mv Gnuvario-E-354.partitions.bin/Gnuvario-E.ino.partitions.bin  release/Gnuvario-E-354.partitions.bin
 
       # Comme le job est créé à la demande et qu’il nous faut un tag, on commence par mettre la date et l’heure dans NOW
       # - name: set env
