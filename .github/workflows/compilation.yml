@@ -141,7 +141,7 @@ jobs:
 
       - name: retrieve release (si manuel)
         if: (! startsWith( github.ref, 'refs/tags/v'))
-        run: echo "RVER={{ github.event.inputs.release_version }}" >> $GITHUB_ENV
+        run: echo "RVER=${{ github.event.inputs.release_version }}" >> $GITHUB_ENV
 
       # Publication
       - name: make release
