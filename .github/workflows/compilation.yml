@@ -105,7 +105,7 @@ jobs:
       - name: download artifacts
         uses: actions/download-artifact@v2
 
-      Déplacement des fichiers dans un répertoire 'release'
+      # Déplacement des fichiers dans un répertoire 'release'
       - name: move files
         run: |
           mkdir release
