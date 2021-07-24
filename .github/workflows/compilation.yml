@@ -42,30 +42,8 @@ jobs:
           GITHUB_CONTEXT: ${{ toJSON(github) }}
         run: echo "$GITHUB_CONTEXT"
 
-      - name: Dump job context
-        env:
-          JOB_CONTEXT: ${{ toJSON(job) }}
-        run: echo "$JOB_CONTEXT"
-
-      - name: Dump steps context
-        env:
-          STEPS_CONTEXT: ${{ toJSON(steps) }}
-        run: echo "$STEPS_CONTEXT"
-
-      - name: Dump runner context
-        env:
-          RUNNER_CONTEXT: ${{ toJSON(runner) }}
-        run: echo "$RUNNER_CONTEXT"
-
-      - name: Dump strategy context
-        env:
-          STRATEGY_CONTEXT: ${{ toJSON(strategy) }}
-        run: echo "$STRATEGY_CONTEXT"
-
-      - name: Dump matrix context
-        env:
-          MATRIX_CONTEXT: ${{ toJSON(matrix) }}
-        run: echo "$MATRIX_CONTEXT"
+      - name: Dump GitHub context (essai 2)
+        run: echo "${{ toJSON(github) }}"
 
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
@@ -79,8 +57,8 @@ jobs:
         id: cache-dot-arduino15
         uses: actions/cache@v2
         with:
-          path: .arduino15
-          key: ${{ runner.os }}-dot-arduin15
+          path: '.arduino15'
+          key: ${{ runner.os }}-dot-arduino15
 
       # Récup index outils expressifs
       - name: Update index
@@ -107,14 +85,14 @@ jobs:
         uses: actions/upload-artifact@v2.2.3
         with:
             name: Gnuvario-E-${{ matrix.version }}.bin
-            path: "arduino_build/Gnuvario-E-${{ matrix.version }}.bin"
+            path: "arduino_build_${{ matrix.version }}/Gnuvario-E.ino.bin"
             retention-days: 1
 
       - name: Upload partition file ${{ matrix.version }}
         uses: actions/upload-artifact@v2.2.3
         with:
             name: Gnuvario-E-${{ matrix.version }}.partitions.bin
-            path: "arduino_build/Gnuvario-E-${{ matrix.version }}.partitions.bin"
+            path: "arduino_build_${{ matrix.version }}/Gnuvario-E.ino.partitions.bin"
             retention-days: 1
 
   # Job de release, qui dépend du job "build"
