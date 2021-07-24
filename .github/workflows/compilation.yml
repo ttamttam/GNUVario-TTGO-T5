@@ -96,7 +96,7 @@ jobs:
             retention-days: 1
 
       - name: Debug pour dot arduino
-        run: ls -lR
+        run: ls -alR
 
   # Job de release, qui dépend du job "build"
   release:
