@@ -75,12 +75,12 @@ jobs:
         uses: arduino/setup-arduino-cli@v1
 
       # Mise en cache de .arduino15
-      - name: Cache arduin15
-      id: cache-dot-arduino15
-      uses: actions/cache@v2
-      with:
-        path: .arduino15
-        key: ${{ runner.os }}-dot-arduin15
+      - name: Cache dot arduino 15
+        id: cache-dot-arduino15
+        uses: actions/cache@v2
+        with:
+          path: .arduino15
+          key: ${{ runner.os }}-dot-arduin15
 
       # Récup index outils expressifs
       - name: Update index
