@@ -18,7 +18,7 @@ jobs:
           - 294
           - 354
     outputs:
-      mtx: ${{ matrix }}
+      mtx: ${{ toJson(matrix) }}
 
     steps:
       - name: Coin
