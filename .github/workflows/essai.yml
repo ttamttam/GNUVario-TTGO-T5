@@ -17,15 +17,16 @@ jobs:
           - 293
           - 294
           - 354
+    outputs:
+      mtx: ${{ matrix }}
+
     steps:
       - name: Coin
         run: echo "Coin ${{ matrix.version }}"
+      
   release:
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - name: Affichage
-        run: echo ${{ github.jobs.build.env }}
-
-      - name: Affichage 2
-        run: echo ${{ toJson(github.jobs.build.env) }}
+      - name: Coin
+        run: echo "${{ needs.build.outputs.mtx }}"
