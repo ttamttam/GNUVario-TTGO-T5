@@ -59,7 +59,7 @@ jobs:
 
     steps:
       - name: Coin
-        run: echo "Coin"
+        run: echo "Coin ${{ matrix.version }}"
 
       # # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       # - uses: actions/checkout@v2
