@@ -24,8 +24,8 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - name: Affichage
-        run: echo ${{ jobs.build.env }}
+      # - name: Affichage
+      #   run: echo ${{ jobs.build.env }}
 
       - name: Affichage 2
         run: echo ${{ toJson(jobs.build.env) }}
