@@ -6,14 +6,13 @@ on:
   push:
     tags: v*
 
-  # Soit lancement manuel (ça demande "release_version")
+  # Soit lancement manuel (nécessite de renseigner manuellement "release_version", via le dialogue de lancement)
   workflow_dispatch:
     inputs:
       release_version:
         description: Version de la publication
         required: true
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
 
   # Job pour mettre en cache le dossier .arduino15 qui contient les outils expressifs
@@ -47,6 +46,11 @@ jobs:
     needs: cache_arduino
 
     # On va construire différentes versions en parallèle
+
+    # Attention : pour le moment, il est difficile de récupérer la liste des
+    # versions au moment de faire la publication dans le job suivant. Donc si
+    # cette liste set modifiée, il faut bien mettre à jour la liste qui déplace
+    # les fichiers récupérés dans l’étape "move files" du travail "release"
     strategy:
       matrix:
         version:
@@ -94,7 +98,7 @@ jobs:
           --libraries "${GITHUB_WORKSPACE}/Sources/Beta Code/Ide Arduino/libraries" \
           "${GITHUB_WORKSPACE}/Sources/Beta Code/Ide Arduino/Gnuvario-E/Gnuvario-E"
 
-      # Récup des fichiers compilés
+      # Upload des fichiers compilés
       - name: Upload bin file ${{ matrix.version }}
         uses: actions/upload-artifact@v2.2.3
         with:
@@ -120,7 +124,8 @@ jobs:
         uses: actions/download-artifact@v2
 
       # Déplacement des fichiers dans un répertoire 'release'
-      # TODO: construire la liste automatiquement à l’étape précédente et récupérer ici
+      # TODO: construire la liste automatiquement à l’étape précédente et
+      # récupérer ici. En attendant, mettre à jour manuellement
       - name: move files
         run: |
           mkdir release
